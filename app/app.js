@@ -82,16 +82,52 @@ var chatComponent = Vue.extend({
     }
 });
 
+var roomsComponent = Vue.extend({
+    template: `
+        <div class="col-md-4" v-for="r in rooms">
+            <div class="panel panel-primary">
+                <div class="panel-heading">{{r.name}}</div>
+                <div class="panel-body">
+                    {{r.description}}
+                    <br>
+                    <a href="javascript:void(0)" @click="gotoChat(r)">Entrar</a>
+                </div>
+            </div>
+        </div>
+    `,
+
+    data : function () {
+
+        return {
+            rooms: [
+                {id: "001", name: "PHP", description: "Sala PHP"},
+                {id: "002", name: "JAVA", description: "Sala JAVA"},
+                {id: "003", name: "PYTHON", description: "Sala PYTHON"},
+                {id: "004", name: "JAVASCRIPT", description: "Sala JAVASCRIPT"},
+                {id: "005", name: "RUBY", description: "Sala RUBY"}
+            ]
+        }
+    },
+    methods:{
+        gotoChat: function (room) {
+            this.$route.router.go('/chat/'+ room.id);
+        }
+    }
+
+});
+
+
 //app
 var appComponent = Vue.extend({});
-
-Vue.component('my-chat',chatComponent);
 
 //router
 var router = new VueRouter();
 router.map({
-    '/chat': {
+    '/chat/:room': {
         component: chatComponent
+    },
+    '/rooms': {
+        component: roomsComponent
     }
 });
 
