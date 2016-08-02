@@ -1,3 +1,15 @@
+//Initialize firebase
+var config = {
+    apiKey: "AIzaSyBZym3mHfq1cpm0Goax1oa_mTc13t4E0dU",
+    authDomain: "chat-vuejs.firebaseapp.com",
+    databaseURL: "https://chat-vuejs.firebaseio.com",
+    storageBucket: "chat-vuejs.appspot.com"
+};
+var firebaseApp = firebase.initializeApp(config);
+
+/** db instance */
+var db = firebaseApp.database();
+
 //chat
 var chatComponent = Vue.extend({
     template:`
@@ -82,6 +94,7 @@ var chatComponent = Vue.extend({
     }
 });
 
+//rooms
 var roomsComponent = Vue.extend({
     template: `
         <div class="col-md-4" v-for="r in rooms">
@@ -94,8 +107,18 @@ var roomsComponent = Vue.extend({
                 </div>
             </div>
         </div>
+
+        <input type="text" v-model="text" @keyup.enter="insertData">
+        <ul>
+        <li v-for="i in array">
+            {{i.text}}
+        </li>
+        </ul>
     `,
 
+    firebase: {
+        array: db.ref('array')
+    },
     data : function () {
 
         return {
@@ -111,11 +134,15 @@ var roomsComponent = Vue.extend({
     methods:{
         gotoChat: function (room) {
             this.$route.router.go('/chat/'+ room.id);
+        },
+        insertData: function () {
+          this.$firebaseRefs.array.push({
+              text: this.text
+          });
         }
     }
 
 });
-
 
 //app
 var appComponent = Vue.extend({});
