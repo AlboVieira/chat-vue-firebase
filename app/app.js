@@ -1,18 +1,20 @@
 //Initialize firebase
-var config = {
+/*var config = {
     apiKey: "AIzaSyBZym3mHfq1cpm0Goax1oa_mTc13t4E0dU",
     authDomain: "chat-vuejs.firebaseapp.com",
     databaseURL: "https://chat-vuejs.firebaseio.com",
     storageBucket: "chat-vuejs.appspot.com"
 };
-var firebaseApp = firebase.initializeApp(config);
+var firebaseApp = firebase.initializeApp(config);*/
 
-/** db instance */
-var db = firebaseApp.database();
+requirejs(['firebase'], function (firebaseApp) {
 
-//chat
-var chatComponent = Vue.extend({
-    template:`
+    /** db instance */
+    var db = firebaseApp.database();
+
+    //chat
+    var chatComponent = Vue.extend({
+        template:`
 
         <style scoped>
             .chat{
@@ -63,60 +65,60 @@ var chatComponent = Vue.extend({
         </div>
         `,
 
-    //created could be used before ready
-    created: function(){
-        //mount the ref room from url
-        var roomRef = 'chat/rooms/' + this.$route.params.room;
+        //created could be used before ready
+        created: function(){
+            //mount the ref room from url
+            var roomRef = 'chat/rooms/' + this.$route.params.room;
 
-        // get the name of the chat
-        var chat = this;
-        db.ref(roomRef).child('description').once("value", function(data) {
-            chat.roomName = data.val();
-        });
-
-        //force a bind with firebase
-        this.$bindAsArray('messages', db.ref(roomRef +'/messages'));
-
-    },
-
-    data: function () {
-        return {
-            user:{
-                email: localStorage.getItem('email'),
-                name: localStorage.getItem('name'),
-                photo: localStorage.getItem('photo')
-            },
-            message: '',
-            roomName:''
-        };
-    },
-    methods:{
-        isUser: function (email) {
-            return this.user.email == email;
-        },
-        send: function(){
-            this.$firebaseRefs.messages.push({
-                name: this.user.name,
-                email: this.user.email,
-                text: this.message,
-                photo: this.user.photo
+            // get the name of the chat
+            var chat = this;
+            db.ref(roomRef).child('description').once("value", function(data) {
+                chat.roomName = data.val();
             });
 
-            this.message = '';
-        }
-    }
-});
+            //force a bind with firebase
+            this.$bindAsArray('messages', db.ref(roomRef +'/messages'));
 
-//rooms
-var rooms = [
-    {id: "001", name: "PHP", description: "Sala PHP"},
-    {id: "002", name: "JAVA", description: "Sala JAVA"},
-    {id: "003", name: "PYTHON", description: "Sala PYTHON"},
-    {id: "004", name: "JAVASCRIPT", description: "Sala JAVASCRIPT"},
-    {id: "005", name: "RUBY", description: "Sala RUBY"}
-];
-var roomsCreateComponent = Vue.extend({
-    template: `
+        },
+
+        data: function () {
+            return {
+                user:{
+                    email: localStorage.getItem('email'),
+                    name: localStorage.getItem('name'),
+                    photo: localStorage.getItem('photo')
+                },
+                message: '',
+                roomName:''
+            };
+        },
+        methods:{
+            isUser: function (email) {
+                return this.user.email == email;
+            },
+            send: function(){
+                this.$firebaseRefs.messages.push({
+                    name: this.user.name,
+                    email: this.user.email,
+                    text: this.message,
+                    photo: this.user.photo
+                });
+
+                this.message = '';
+            }
+        }
+    });
+
+    //rooms
+    var rooms = [
+        {id: "001", name: "PHP", description: "Sala PHP"},
+        {id: "002", name: "JAVA", description: "Sala JAVA"},
+        {id: "003", name: "PYTHON", description: "Sala PYTHON"},
+        {id: "004", name: "JAVASCRIPT", description: "Sala JAVASCRIPT"},
+        {id: "005", name: "RUBY", description: "Sala RUBY"}
+    ];
+    var roomsCreateComponent = Vue.extend({
+        template: `
     <p>Salas Criadas:</p>
     <ul>
         <li v-for="r in rooms">
@@ -125,27 +127,27 @@ var roomsCreateComponent = Vue.extend({
     </ul>
     `,
 
-    firebase: {
-        rooms: db.ref('chat/rooms')
-    },
+        firebase: {
+            rooms: db.ref('chat/rooms')
+        },
 
-    ready: function () {
-        var chatRef = db.ref('chat');
-        var roomsRef = chatRef.child('rooms');
+        ready: function () {
+            var chatRef = db.ref('chat');
+            var roomsRef = chatRef.child('rooms');
 
-        //persist in firebase the array rooms
-        rooms.forEach(function (room) {
-            roomsRef.child(room.id).set({
-                name: room.name,
-                description: room.description
-            })
-        });
+            //persist in firebase the array rooms
+            rooms.forEach(function (room) {
+                roomsRef.child(room.id).set({
+                    name: room.name,
+                    description: room.description
+                })
+            });
 
-    }
-});
+        }
+    });
 
-var roomsComponent = Vue.extend({
-    template: `
+    var roomsComponent = Vue.extend({
+        template: `
         <div class="col-md-4" v-for="r in rooms">
             <div class="panel panel-primary">
                 <div class="panel-heading">{{r.name}}</div>
@@ -189,60 +191,61 @@ var roomsComponent = Vue.extend({
 
     `,
 
-    firebase: {
-        rooms: db.ref('chat/rooms')
-    },
-    data : function () {
-
-        return {
-            rooms: [
-                {id: "001", name: "PHP", description: "Sala PHP"},
-                {id: "002", name: "JAVA", description: "Sala JAVA"},
-                {id: "003", name: "PYTHON", description: "Sala PYTHON"},
-                {id: "004", name: "JAVASCRIPT", description: "Sala JAVASCRIPT"},
-                {id: "005", name: "RUBY", description: "Sala RUBY"}
-            ],
-            name: '',
-            email: '',
-            room: null
-        }
-    },
-
-    methods:{
-        login: function (room) {
-            //setando the active user
-            localStorage.setItem('name',this.name);
-            localStorage.setItem('email',this.email);
-            localStorage.setItem('photo','http://www.gravatar.com/avatar/' + md5(this.email)+'.jpg');
-
-            $('#modalLogin').modal('hide');
-
-            this.$route.router.go('/chat/'+ this.room.id);
+        firebase: {
+            rooms: db.ref('chat/rooms')
         },
-        openModal: function (room) {
-            this.room = room;
-            $('#modalLogin').modal('show');
+        data : function () {
+
+            return {
+                rooms: [
+                    {id: "001", name: "PHP", description: "Sala PHP"},
+                    {id: "002", name: "JAVA", description: "Sala JAVA"},
+                    {id: "003", name: "PYTHON", description: "Sala PYTHON"},
+                    {id: "004", name: "JAVASCRIPT", description: "Sala JAVASCRIPT"},
+                    {id: "005", name: "RUBY", description: "Sala RUBY"}
+                ],
+                name: '',
+                email: '',
+                room: null
+            }
+        },
+
+        methods:{
+            login: function (room) {
+                //setando the active user
+                localStorage.setItem('name',this.name);
+                localStorage.setItem('email',this.email);
+                localStorage.setItem('photo','http://www.gravatar.com/avatar/' + md5(this.email)+'.jpg');
+
+                $('#modalLogin').modal('hide');
+
+                this.$route.router.go('/chat/'+ this.room.id);
+            },
+            openModal: function (room) {
+                this.room = room;
+                $('#modalLogin').modal('show');
+            }
         }
-    }
+
+    });
+
+    //app
+    var appComponent = Vue.extend({});
+
+    //router
+    var router = new VueRouter();
+    router.map({
+        '/chat/:room': {
+            component: chatComponent
+        },
+        '/rooms': {
+            component: roomsComponent
+        },
+        '/rooms/create': {
+            component: roomsCreateComponent
+        }
+    });
+
+    router.start(appComponent,"#app");
 
 });
-
-
-//app
-var appComponent = Vue.extend({});
-
-//router
-var router = new VueRouter();
-router.map({
-    '/chat/:room': {
-        component: chatComponent
-    },
-    '/rooms': {
-        component: roomsComponent
-    },
-    '/rooms/create': {
-        component: roomsCreateComponent
-    }
-});
-
-router.start(appComponent,"#app");
