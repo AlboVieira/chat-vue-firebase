@@ -1,6 +1,4 @@
-/**
- * Created by albo-vieira on 04/08/16.
- */
+
 define(['firebase'], function (firebaseApp) {
     var db = firebaseApp.database();
     var rooms = [

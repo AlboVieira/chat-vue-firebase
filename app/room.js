@@ -5,13 +5,13 @@ define(['firebase'], function (firebaseApp) {
     var db = firebaseApp.database();
     return Vue.extend({
         template: `
-        <div class="col-md-4" v-for="r in rooms">
+        <div class="col-md-4" v-for="(index, r) in rooms">
             <div class="panel panel-primary">
                 <div class="panel-heading">{{r.name}}</div>
                 <div class="panel-body">
                     {{r.description}}
                     <br>
-                    <a href="javascript:void(0)" @click="openModal(r)">Entrar</a>
+                    <a href="javascript:void(0)" @click="openModal(index,r)">Entrar</a>
                 </div>
             </div>
         </div>
@@ -51,15 +51,26 @@ define(['firebase'], function (firebaseApp) {
         firebase: {
             rooms: db.ref('chat/rooms')
         },
+        created: function(){
+
+            var that = this;
+            db.ref('chat').child('rooms').once("value", function(data) {
+                that.rooms = data.val();
+                //console.log(data.val());
+                console.log(that.rooms);
+            });
+
+
+        },
         data : function () {
 
             return {
                 rooms: [
-                    {id: "001", name: "PHP", description: "Sala PHP"},
+                  /*  {id: "001", name: "PHP", description: "Sala PHP"},
                     {id: "002", name: "JAVA", description: "Sala JAVA"},
                     {id: "003", name: "PYTHON", description: "Sala PYTHON"},
                     {id: "004", name: "JAVASCRIPT", description: "Sala JAVASCRIPT"},
-                    {id: "005", name: "RUBY", description: "Sala RUBY"}
+                    {id: "005", name: "RUBY", description: "Sala RUBY"}*/
                 ],
                 name: '',
                 email: '',
@@ -78,8 +89,10 @@ define(['firebase'], function (firebaseApp) {
 
                 this.$route.router.go('/chat/'+ this.room.id);
             },
-            openModal: function (room) {
+            openModal: function (roomId,room) {
                 this.room = room;
+                this.room.id = roomId;
+                console.log(room);
                 $('#modalLogin').modal('show');
             }
         }
