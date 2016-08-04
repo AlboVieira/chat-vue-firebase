@@ -1,8 +1,6 @@
-
-
-define('chat', function () {
-
-    chatComponent = Vue.extend({
+define(['firebase'], function (firebaseApp) {
+    var db = firebaseApp.database();
+    return Vue.extend({
         template:`
 
         <style scoped>
@@ -97,7 +95,4 @@ define('chat', function () {
             }
         }
     });
-
-    return chatComponent;
-
 });

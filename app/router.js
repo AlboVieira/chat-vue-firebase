@@ -1,19 +1,19 @@
 /**
  * Created by albo-vieira on 04/08/16.
  */
-define('router', function () {
+define(['chat','room','createRoom'], function (chat,room,createRoom) {
 
     //router
     var router = new VueRouter();
     router.map({
         '/chat/:room': {
-            component: chatComponent
+            component: chat
         },
         '/rooms': {
-            component: roomsComponent
+            component: room
         },
         '/rooms/create': {
-            component: roomsCreateComponent
+            component: createRoom
         }
     });
 
